@@ -33,6 +33,18 @@ public struct JSONObject : JSONValue, Sequence, ExpressibleByDictionaryLiteral, 
         }
     }
     
+    public var keys: [String] {
+        return Array(storage.keys)
+    }
+    
+    public var values: [JSONValue] {
+        return Array(storage.values)
+    }
+    
+    public var dictionaryValue: [String: JSONValue] {
+        return storage
+    }
+    
     public static func ==(lhs: JSONObject, rhs: JSONObject) -> Bool {
         for (key, value) in lhs {
             if let value = value as? String {
@@ -299,7 +311,8 @@ extension String: JSONValue {
                 let character = UInt8(char.value)
                 buffer.append(character)
             default:
-                Character(char).
+                // TODO
+                continue
             }
         }
         
