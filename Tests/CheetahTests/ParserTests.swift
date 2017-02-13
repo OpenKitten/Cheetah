@@ -401,7 +401,7 @@ class ParsingTests: XCTestCase {
     // MARK: - Objects
     
     func testObject_Empty() throws {
-        throwingObject("{}")
+        parse("{}", to: [:] as JSONObject)
     }
     
     func testObject_JustComma() throws {
