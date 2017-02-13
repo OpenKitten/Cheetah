@@ -2,7 +2,7 @@ import Foundation
 
 internal enum EscapableCharacters: Character {
     case quote = "\""
-    case apostrophe = "'"
+//    case apostrophe = "'"
     case slash = "/"
     case backslash = "\\"
     //    case b = "\b"
@@ -53,14 +53,78 @@ public struct JSON {
         self.data = data
     }
     
+    mutating func parseUnicode() throws -> UnicodeScalar {
+        // Parse from the start
+//        position -= 1
+        
+        func makeInteger(from hex: [UInt8]) throws -> UTF16.CodeUnit {
+            var int: UInt16 = 0
+            
+            for (position, byte) in hex.reversed().enumerated() {
+                let lowercasedRadix16table: [UInt8] = [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66]
+                
+                let uppercasedRadix16table: [UInt8] = [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46]
+                
+                if let num = lowercasedRadix16table.index(of: byte) {
+                    int += UInt16(num) * UInt16(pow(16, Double(position)))
+                } else if let num = uppercasedRadix16table.index(of: byte) {
+                    int += UInt16(num) * UInt16(pow(16, Double(position)))
+                } else {
+                    throw JSONError.invalidUnicodeCharacter
+                }
+            }
+            
+            return int
+        }
+        
+        try require(4)
+        var characters = [UInt16]()
+        
+        while true {
+            let character = try makeInteger(from: Array(data[position..<position + 4]))
+            
+            position += 4
+            
+            characters.append(character)
+            
+            if characters.count > 1 {
+                guard UTF16.isTrailSurrogate(character) else {
+                    throw JSONError.invalidUnicodeCharacter
+                }
+                
+                var utfParser = UTF16()
+                var iterator = characters.makeIterator()
+                switch utfParser.decode(&iterator) {
+                case .scalarValue(let char):
+                    return char
+                case .emptyInput, .error:
+                    throw JSONError.invalidUnicodeCharacter
+                }
+                
+            } else if !UTF16.isLeadSurrogate(character) {
+                guard let scalar = UnicodeScalar(character) else {
+                    throw JSONError.invalidUnicodeCharacter
+                }
+                
+                return scalar
+            }
+            
+            guard remaining(2) && data[position] == SpecialCharacters.escape && data[position + 1] == 0x75 else {
+                throw JSONError.invalidUnicodeCharacter
+            }
+            
+            position += 2
+        }
+    }
+
     mutating func parseString() throws -> String {
         try skipWhitespace()
         
-        guard remaining(1), data[position] == SpecialCharacters.stringQuotationMark || data[position] == SpecialCharacters.apostrophe else {
+        try require(1)
+        
+        guard data[position] == SpecialCharacters.stringQuotationMark else {
             throw JSONError.unexpectedToken(want: SpecialCharacters.stringQuotationMark)
         }
-        
-        let endCharacter = data[position]
         
         position += 1
         
@@ -68,9 +132,7 @@ public struct JSON {
         
         loop: while position < data.count {
             if data[position] == SpecialCharacters.escape {
-                guard remaining(1) else {
-                    throw JSONError.unexpectedEndOfData
-                }
+                try require(1)
                 
                 // The `\`
                 position += 1
@@ -79,99 +141,79 @@ public struct JSON {
                 // `u` for unicode
                 case 0x75:
                     position += 1
-                    
-                    guard remaining(4) else {
-                        throw JSONError.unexpectedEndOfData
-                    }
-                    
-                    func makeInteger(from hex: [UInt8]) throws -> UTF16.CodeUnit {
-                        var int: UInt16 = 0
-                        
-                        for (position, byte) in hex.reversed().enumerated() {
-                            let lowercasedRadix16table: [UInt8] = [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66]
-                            
-                            let uppercasedRadix16table: [UInt8] = [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46]
-                            
-                            if let num = lowercasedRadix16table.index(of: byte) {
-                                int += UInt16(num) * UInt16(pow(16, Double(position)))
-                            } else if let num = uppercasedRadix16table.index(of: byte) {
-                                int += UInt16(num) * UInt16(pow(16, Double(position)))
-                            } else {
-                                throw JSONError.invalidUnicodeCharacter
-                            }
-                        }
-                        
-                        return int
-                    }
-                    
-                    func hasNextUnicode() -> Bool {
-                        let unicode = remaining(6) && data[position] == SpecialCharacters.escape && data[position + 1] == 0x75
-                        
-                        if unicode {
-                            position += 2
-                        }
-                        
-                        return unicode
-                    }
-                    
-                    var unicodeNumbers: [UTF16.CodeUnit] = []
-                    
-                    repeat {
-                        unicodeNumbers.append(try makeInteger(from: Array(data[position..<position + 4])))
-                        position += 4
-                    } while hasNextUnicode()
-                    
-                    var utf = UTF16()
-                    var iterator = unicodeNumbers.makeIterator()
-                    
-                    guard case .scalarValue(let character) = utf.decode(&iterator) else {
-                        throw JSONError.invalidUnicodeCharacter
-                    }
-                    
-                    characters.append(Character(character))
+                    let unicodeScalar = try parseUnicode()
+                    characters.append(Character(unicodeScalar))
                 case SpecialCharacters.stringQuotationMark:
-                    characters.append(EscapableCharacters.quote.rawValue)
-                    position += 1
-                case SpecialCharacters.apostrophe:
-                    characters.append(EscapableCharacters.apostrophe.rawValue)
+                    characters.append(SpecialCharacters.stringQuotationMark.character)
                     position += 1
                 case SpecialCharacters.escape:
-                    characters.append(EscapableCharacters.backslash.rawValue)
+                    characters.append(SpecialCharacters.escape.character)
                     position += 1
                 case 0x2f: // `/`
-                    characters.append(EscapableCharacters.slash.rawValue)
+                    characters.append(SpecialCharacters.slash.character)
                     position += 1
                 case 0x62: // `b`
                     throw JSONError.unsupported
                 case 0x66: // `f`
                     throw JSONError.unsupported
                 case 0x6e: // `n`
-                    characters.append(EscapableCharacters.n.rawValue)
+                    characters.append(SpecialCharacters.lineFeed.character)
                     position += 1
                 case 0x72: // `r`
-                    characters.append(EscapableCharacters.r.rawValue)
+                    characters.append(SpecialCharacters.carriageReturn.character)
                     position += 1
                 case 0x74: // `t`
-                    characters.append(EscapableCharacters.t.rawValue)
+                    characters.append(SpecialCharacters.tab.character)
                     position += 1
                 default:
                     throw JSONError.invalidEscapedCharacter
                 }
                 // If this is the string end, but not escaped unless the escape is escaped
-            } else if data[position] == endCharacter {
+            } else if data[position] == SpecialCharacters.stringQuotationMark {
                 position += 1
                 
                 try skipWhitespace()
                 
                 return characters
-            } else {
-                defer { position += 1 }
                 
-                characters.append(Character(UnicodeScalar(data[position])))
+//                var characterPosition = 0
+//                var string = ""
+                
+//                characterLoop: while characterPosition < characters.count {
+//                    var buffer: [UInt8] = []
+//                    buffer.reserveCapacity(4)
+//                    
+                //                    unicodeLoop: while buffer.count < 4 && characterPosition < characters.count {
+//                var gen = characters.makeIterator()
+//                unicodeLoop: while true {
+////                        buffer.append(characters[characterPosition])
+////                        characterPosition += 1
+//                    
+////                        var utfString = buffer.reversed()
+//                        
+//                        var utf = UTF8()
+//                        switch utf.decode(&gen) {
+//                        case .scalarValue(let unicode):
+//                            
+////                            try reader.nextAndCheckNotDone()
+//                            string.append(Character(unicode))
+//                            continue unicodeLoop
+//                        case .emptyInput:
+//                            return string
+//                        case .error:
+//                            //continue because we might be reading a longer char
+////                            try reader.nextAndCheckNotDone()
+//                            continue unicodeLoop
+//                        }
+//                    }
+//                }
+            } else {
+                characters.append(data[position].character)
+                position += 1
             }
         }
         
-        throw JSONError.unexpectedToken(want: endCharacter)
+        throw JSONError.unexpectedToken(want: SpecialCharacters.stringQuotationMark)
     }
     
     mutating func parseNumber() throws -> JSONValue {
@@ -260,16 +302,14 @@ public struct JSON {
     mutating func parseValue() throws -> JSONValue {
         try skipWhitespace()
         
-        guard remaining(1) else {
-            throw JSONError.unexpectedEndOfData
-        }
+        try require(1)
         
         defer {
             _ = try? skipWhitespace()
         }
         
         switch data[position] {
-        case SpecialCharacters.stringQuotationMark, SpecialCharacters.apostrophe:
+        case SpecialCharacters.stringQuotationMark:
             return try parseString()
         case SpecialCharacters.objectOpen:
             return try parse() as JSONObject
@@ -278,7 +318,8 @@ public struct JSON {
         case 0x30...0x39, SpecialCharacters.minus:
             return try parseNumber()
         case 0x6e: // `n`
-            guard remaining(4), [UInt8](data[position..<position + 4]) == SpecialWords.null else {
+            try require(4)
+            guard [UInt8](data[position..<position + 4]) == SpecialWords.null else {
                 throw JSONError.unknownValue
             }
             
@@ -286,7 +327,8 @@ public struct JSON {
             
             return Null()
         case 0x74: // `t`
-            guard remaining(4), [UInt8](data[position..<position + 4]) == SpecialWords.true else {
+            try require(4)
+            guard [UInt8](data[position..<position + 4]) == SpecialWords.true else {
                 throw JSONError.unknownValue
             }
             
@@ -294,7 +336,8 @@ public struct JSON {
             
             return true
         case 0x66: // `f`
-            guard remaining(5), [UInt8](data[position..<position + 5]) == SpecialWords.false else {
+            try require(5)
+            guard [UInt8](data[position..<position + 5]) == SpecialWords.false else {
                 throw JSONError.unknownValue
             }
             
@@ -339,7 +382,9 @@ public struct JSON {
             let key = try parseString()
             try skipWhitespace()
             
-            guard remaining(1), data[position] == SpecialCharacters.colon else {
+            try require(1)
+            
+            guard data[position] == SpecialCharacters.colon else {
                 throw JSONError.invalidObject
             }
             
@@ -385,9 +430,7 @@ public struct JSON {
             case SpecialCharacters.asterisk:
                 var unclosed = 0
                 while position < data.count {
-                    guard remaining(2) else {
-                        throw JSONError.unexpectedEndOfData
-                    }
+                    try require(2)
                     
                     if data[position] == SpecialCharacters.asterisk && data[position + 1] == SpecialCharacters.slash {
                         position += 2
@@ -416,6 +459,12 @@ public struct JSON {
         return data.count - position
     }
     
+    func require(_ amount: Int) throws {
+        guard remaining(amount) else {
+            throw JSONError.unexpectedEndOfData
+        }
+    }
+    
     func remaining(_ amount: Int) -> Bool {
         return remaining() > amount - 1
     }
@@ -427,7 +476,9 @@ public struct JSON {
         
         try skipWhitespace()
         
-        guard remaining(1), data[position] == SpecialCharacters.arrayOpen else {
+        try require(1)
+        
+        guard data[position] == SpecialCharacters.arrayOpen else {
             throw JSONError.missingStartTag
         }
         
@@ -439,7 +490,9 @@ public struct JSON {
         
         try skipWhitespace()
         
-        guard remaining(1), data[position] == SpecialCharacters.arrayClose else {
+        try require(1)
+        
+        guard data[position] == SpecialCharacters.arrayClose else {
             throw JSONError.missingEndTag
         }
         
@@ -463,7 +516,9 @@ public struct JSON {
         
         try skipWhitespace()
         
-        guard remaining(1), data[position] == SpecialCharacters.objectOpen else {
+        try require(1)
+        
+        guard data[position] == SpecialCharacters.objectOpen else {
             throw JSONError.missingStartTag
         }
         
@@ -473,7 +528,9 @@ public struct JSON {
         
         let storage = try parseKeyValues()
         
-        guard remaining(1), data[position] == SpecialCharacters.objectClose else {
+        try require(1)
+        
+        guard data[position] == SpecialCharacters.objectClose else {
             throw JSONError.missingEndTag
         }
         
@@ -491,7 +548,7 @@ public struct JSON {
     }
     
     public static func parse(from data: String, allowingComments: Bool = true) throws -> JSONValue {
-        return try parse(from: [UInt8](data.makeJSONBinary()))
+        return try parse(from: data.makeJSONBinary())
     }
     
     public static func parse(from data: [UInt8], allowingComments: Bool = true) throws -> JSONValue {
@@ -505,7 +562,7 @@ public struct JSON {
         let result: JSONValue
         
         switch parser.data[parser.position] {
-        case SpecialCharacters.stringQuotationMark, SpecialCharacters.apostrophe:
+        case SpecialCharacters.stringQuotationMark:
             result = try parser.parseString()
         case SpecialCharacters.objectOpen:
             result = try parser.parse() as JSONObject

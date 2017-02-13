@@ -13,6 +13,12 @@ class SerializerBenchmarks: XCTestCase {
     super.setUp()
     _ = largeJson.serialize()
   }
+    
+    func testDeserializationPerformance() throws {
+        measure {
+            _ = try! JSON.parse(from: largeJsonData)
+        }
+    }
 
   func testSerializerPerformance() {
 

@@ -30,7 +30,7 @@ class ParsingTests: XCTestCase {
     // MARK: - Bools
     
     func testTrueParses() throws {
-        XCTAssertEqual(try JSON.parse(from: "true") as? Bool, true)
+        parse("true", to:  true)
     }
     
     func testTrueThrowsOnMismatch() {
@@ -38,7 +38,7 @@ class ParsingTests: XCTestCase {
     }
     
     func testFalseParses() {
-        XCTAssertEqual(try JSON.parse(from: "false") as? Bool, false)
+        parse("false", to:  false)
     }
     
     func testBoolean_False_Mismatch() {
@@ -105,31 +105,31 @@ class ParsingTests: XCTestCase {
     // MARK: - Numbers
     
     func testNumber_Int_ZeroWithTrailingWhitespace() throws {
-        XCTAssertEqual(try JSON.parse(from: "0  ") as? Int, 0)
+        parse("0  ", to:  0)
     }
     
     func testNumber_Int_Zero() throws {
-        XCTAssertEqual(try JSON.parse(from: "0") as? Int, 0)
+        parse("0", to:  0)
     }
     
     func testNumber_Int_One() throws {
-        XCTAssertEqual(try JSON.parse(from: "1") as? Int, 1)
+        parse("1", to:  1)
     }
     
     func testNumber_Int_Basic() throws {
-        XCTAssertEqual(try JSON.parse(from: "24") as? Int, 24)
+        parse("24", to:  24)
     }
     
     func testNumber_IntMin() throws {
-        XCTAssertEqual(try JSON.parse(from: Int.min.description) as? Int, Int.min)
+        parse(Int.min.description, to:  Int.min)
     }
     
     func testNumber_IntMax() throws {
-        XCTAssertEqual(try JSON.parse(from: Int.max.description) as? Int, Int.max)
+        parse(Int.max.description, to:  Int.max)
     }
     
     func testNumber_Int_Negative() throws {
-        XCTAssertEqual(try JSON.parse(from: "-32") as? Int, -32)
+        parse("-32", to:  -32)
     }
     
     func testNumber_Int_Garbled() throws {
@@ -161,31 +161,31 @@ class ParsingTests: XCTestCase {
 //    }
     
     func testNumber_Dbl_Basic() throws {
-        XCTAssertEqual(try JSON.parse(from: "46.57") as? Double, 46.57)
+        parse("46.57", to:  46.57)
     }
     
     func testNumber_Dbl_ZeroSomething() throws {
-        XCTAssertEqual(try JSON.parse(from: "0.98") as? Double, 0.98)
+        parse("0.98", to:  0.98)
     }
     
     func testNumber_Dbl_MinusZeroSomething() throws {
-        XCTAssertEqual(try JSON.parse(from: "-0.98") as? Double, -0.98)
+        parse("-0.98", to:  -0.98)
     }
     
     func testNumber_Dbl_ThrowsOnMinus() {
-        XCTAssertThrowsError(try JSON.parse(from: "-"))
+        throwingString("-")
     }
     
     func testNumber_Dbl_MinusDecimal() {
-        XCTAssertThrowsError(try JSON.parse(from: "-.1"))
+        throwingString("-.1")
     }
     
     func testNumber_Dbl_Incomplete() {
-        XCTAssertThrowsError(try JSON.parse(from: "24."))
+        throwingString("24.")
     }
     
     func testNumber_Dbl_Negative() throws {
-        XCTAssertEqual(try JSON.parse(from: "-24.34") as? Double, -24.34)
+        parse("-24.34", to:  -24.34)
     }
     
     func testNumber_Dbl_Negative_WrongChar() {
@@ -202,15 +202,15 @@ class ParsingTests: XCTestCase {
     
     // http://seriot.ch/parsing_json.html
     func testNumber_Double_ZeroExpOne() throws {
-        XCTAssertEqual(try JSON.parse(from: "0e1") as? Double, 0.0)
+        parse("0e1", to:  0.0)
     }
     
     func testNumber_Double_Exp_Normal() throws {
-        XCTAssertEqual(try JSON.parse(from: "-24.3245e2") as? Double, -2432.45)
+        parse("-24.3245e2", to:  -2432.45)
     }
     
     func testNumber_Double_Exp_Positive() throws {
-        XCTAssertEqual(try JSON.parse(from: "-24.3245e+2") as? Double, -2432.45)
+        parse("-24.3245e+2", to:  -2432.45)
     }
     
     // TODO (vdka): floating point accuracy
@@ -221,19 +221,19 @@ class ParsingTests: XCTestCase {
     // May be hard to do this fast and correct in pure swift.
     func testNumber_Double_Exp_Negative() throws {
         // FIXME (vdka): Fix floating point number types
-        //XCTAssertEqual(try JSON.parse(from: "-24.3245e-2") as? Double, -24.3245e-2)
+        //parse("-24.3245e-2", to:  -24.3245e-2)
     }
     
     func testNumber_Double_ExactnessNoExponent() throws {
-        XCTAssertEqual(try JSON.parse(from: "-123451123442342.12124234") as? Double, -123451123442342.12124234)
+        parse("-123451123442342.12124234", to: -123451123442342.12124234)
     }
     
     func testNumber_Double_ExactnessWithExponent() throws {
-        XCTAssertEqual(try JSON.parse(from: "-123456789.123456789e-150") as? Double, -123456789.123456789e-150)
+        parse("-123456789.123456789e-150", to: -123456789.123456789e-150)
     }
     
     func testNumber_Double_Exp_NoFrac() throws {
-        XCTAssertEqual(try JSON.parse(from: "24E2") as? Double, 2400.0)
+        parse("24E2", to: 2400.0)
     }
     
     func testNumber_Double_Exp_TwoEs() throws {
@@ -251,7 +251,7 @@ class ParsingTests: XCTestCase {
     }
     
     func testEscape_Unicode_Normal() throws {
-        XCTAssertEqual(try JSON.parse(from: "'\\u0048'") as? String, "H")
+        parse("'\\u0048'", to: "H")
     }
     
     func testEscape_Unicode_Invalid() {
@@ -259,11 +259,11 @@ class ParsingTests: XCTestCase {
     }
     
     func testEscape_Unicode_Complex() throws {
-        XCTAssertEqual(try JSON.parse(from: "'\\ud83d\\ude24'") as? String, "\u{1F624}")
+        parse("'\\ud83d\\ude24'", to: "\u{1F624}")
     }
     
     func testEscape_Unicode_Complex_MixedCase() {
-        XCTAssertEqual(try JSON.parse(from: "'\\ud83d\\udE24'") as? String, "\u{1F624}")
+        parse("'\\ud83d\\udE24'", to: "\u{1F624}")
     }
     
     func testEscape_Unicode_InvalidUnicode_MissingDigit() {
@@ -275,34 +275,34 @@ class ParsingTests: XCTestCase {
     }
     
     func testString_Empty() {
-        XCTAssertEqual(try JSON.parse(from: "''") as? String, "")
+        parse("''", to: "")
     }
     
     func testString_Normal() throws {
-        XCTAssertEqual(try JSON.parse(from: "'hello world'") as? String, "hello world")
+        parse("'hello world'", to: "hello world")
     }
     
     func testString_Normal_Backslashes() {
         
         // This looks insane and kinda is. The rule is the right side just halve, the left side quarter.
-        XCTAssertEqual(try JSON.parse(from: "'C:\\\\\\\\share\\\\path\\\\file'") as? String, "C:\\\\share\\path\\file")
+        parse("'C:\\\\\\\\share\\\\path\\\\file'", to: "C:\\\\share\\path\\file")
     }
     
     func testString_Normal_WhitespaceInside() {
-        XCTAssertEqual(try JSON.parse(from: "'he \\r\\n l \\t l \\n o wo\\rrld '") as? String, "he \r\n l \t l \n o wo\rrld ")
+        parse("'he \\r\\n l \\t l \\n o wo\\rrld '", to: "he \r\n l \t l \n o wo\rrld ")
     }
     
     func testString_StartEndWithSpaces() {
-        XCTAssertEqual(try JSON.parse(from: "'  hello world  '") as? String, "  hello world  ")
+        parse("'  hello world  '", to: "  hello world  ")
     }
     
     // NOTE(vdka): This cannot be fixed until I find a better way to initialize strings
     func testString_Null() {
-        XCTAssertEqual(try JSON.parse(from: "'\\u0000'") as? String, "\u{0000}")
+        parse("'\\u0000'", to: "\u{0000}")
     }
     
     func testString_Unicode_SimpleUnescaped() {
-        XCTAssertEqual(try JSON.parse(from: "'€𝄞'") as? String, "€𝄞")
+        parse("'€𝄞'", to: "€𝄞")
     }
     
     // NOTE(vdka): Swift changes the value if we encode 0xFF into a string.
@@ -324,47 +324,47 @@ class ParsingTests: XCTestCase {
 //    }
     
     func testString_Unicode_NoTrailingSurrogate() {
-        XCTAssertThrowsError(try JSON.parse(from: "'\\ud83d'"))
+        throwingString("'\\ud83d'")
     }
     
     func testString_Unicode_InvalidTrailingSurrogate() {
-        XCTAssertThrowsError(try JSON.parse(from: "'\\ud83d\\u0040'"))
+        throwingString("'\\ud83d\\u0040'")
     }
     
     func testString_Unicode_RegularChar() {
-        XCTAssertEqual(try JSON.parse(from: "'hel\\u006co world'") as? String, "hello world")
+        parse("'hel\\u006co world'", to: "hello world")
     }
     
     func testString_Unicode_SpecialCharacter_CoolA() {
-        XCTAssertEqual(try JSON.parse(from: "'h\\u01cdw'") as? String, "hǍw")
+        parse("'h\\u01cdw'", to: "hǍw")
     }
     
     func testString_Unicode_SpecialCharacter_HebrewShin() {
-        XCTAssertEqual(try JSON.parse(from: "'h\\u05e9w'") as? String, "hשw")
+        parse("'h\\u05e9w'", to: "hשw")
     }
     
     func testString_Unicode_SpecialCharacter_QuarterTo() {
-        XCTAssertEqual(try JSON.parse(from: "'h\\u25d5w'") as? String, "h◕w")
+        parse("'h\\u25d5w'", to: "h◕w")
     }
     
     func testString_Unicode_SpecialCharacter_EmojiSimple() {
-        XCTAssertEqual(try JSON.parse(from: "'h\\ud83d\\ude3bw'") as? String, "h😻w")
+        parse("'h\\ud83d\\ude3bw'", to: "h😻w")
     }
     
     func testString_Unicode_SpecialCharacter_EmojiComplex() {
-        XCTAssertEqual(try JSON.parse(from: "'h\\ud83c\\udde8\\ud83c\\uddffw'") as? String, "h🇨🇿w")
+        parse("'h\\ud83c\\udde8\\ud83c\\uddffw'", to: "h🇨🇿w")
     }
     
     func testString_SpecialCharacter_QuarterTo() {
-        XCTAssertEqual(try JSON.parse(from: "'h◕w'") as? String, "h◕w")
+        parse("'h◕w'", to: "h◕w")
     }
     
     func testString_SpecialCharacter_EmojiSimple() {
-        XCTAssertEqual(try JSON.parse(from: "'h😻w'") as? String, "h😻w")
+        parse("'h😻w'", to: "h😻w")
     }
     
     func testString_SpecialCharacter_EmojiComplex() {
-        XCTAssertEqual(try JSON.parse(from: "'h🇨🇿w'") as? String, "h🇨🇿w")
+        parse("'h🇨🇿w'", to: "h🇨🇿w")
     }
     
 //    func testString_BackspaceEscape() {
@@ -401,38 +401,38 @@ class ParsingTests: XCTestCase {
     // MARK: - Objects
     
     func testObject_Empty() throws {
-        XCTAssertEqual(try JSONObject(from: "{}"), [:])
+        throwingObject("{}")
     }
     
     func testObject_JustComma() throws {
-        XCTAssertThrowsError(try JSONObject(from: "{,}"))
+        throwingObject("{,}")
     }
     
     func testObject_SyntaxError() throws {
-        XCTAssertThrowsError(try JSONObject(from: "{'hello': 'failure'; 'goodbye': true}"))
+        throwingObject("{'hello': 'failure'; 'goodbye': true}")
     }
     
     func testObject_TrailingComma() throws {
-        XCTAssertThrowsError(try JSONObject(from: "{'someKey': true,,}"))
+        throwingObject("{'someKey': true,,}")
     }
     
     func testObject_MissingComma() throws {
-        XCTAssertThrowsError(try JSONObject(from: "{'someKey': true 'someOther': false}"))
+        throwingObject("{'someKey': true 'someOther': false}")
     }
     
     func testObject_MissingColon() throws {
-        XCTAssertThrowsError(try JSONObject(from: "{'someKey' true}"))
+        throwingObject("{'someKey' true}")
     }
     
     func testObject_Example1() throws {
-        XCTAssertEqual(try JSONObject(from: "{\t'hello': 'wor🇨🇿ld', \n\t 'val': 1234, 'many': [\n-12.32, null, 'yo'\r], 'emptyDict': {}, 'dict': {'arr':[]}, 'name': true}"),             [
+        parse("{\t'hello': 'wor🇨🇿ld', \n\t 'val': 1234, 'many': [\n-12.32, null, 'yo'\r], 'emptyDict': {}, 'dict': {'arr':[]}, 'name': true}", to: [
                 "hello": "wor🇨🇿ld",
                 "val": 1234,
                 "many": [-12.32, Null(), "yo"] as JSONArray,
                 "emptyDict": [:] as JSONObject,
                 "dict": ["arr": [] as JSONArray] as JSONObject,
                 "name": true
-            ]
+            ] as JSONObject
         )
     }
 //
@@ -482,7 +482,8 @@ class ParsingTests: XCTestCase {
 //        guard let array = json as? JSONArray else {
 //            XCTFail()
 //            return
-//        }
+//        }#1	0x00000001005ba40d in JSON.require(Int) throws -> () at /Users/joannis/Documents/OpenKitten/Cheetah/Sources/Parser.swift:446
+
 //        
 //        XCTAssertEqual(array, [true])
 //    }
@@ -505,6 +506,27 @@ class ParsingTests: XCTestCase {
         let jsonString = "{'hello':'world'}".replacingOccurrences(of: "'", with: "\"")
         
         _ = try JSON.parse(from: jsonString)
+    }
+}
+
+func throwingObject(_ json: String) {
+    XCTAssertThrowsError(try JSONObject(from: json.replacingOccurrences(of: "'", with: "\"")))
+}
+
+func throwingString(_ json: String) {
+    XCTAssertThrowsError(try JSON.parse(from: json.replacingOccurrences(of: "'", with: "\"") as String))
+}
+
+func parse<T: JSONValue>(_ json: String, to other: T) {
+    do {
+        guard let value = try JSON.parse(from: json.replacingOccurrences(of: "'", with: "\""), allowingComments: true) as? T else {
+            XCTFail()
+            return
+        }
+        XCTAssertEqual(value.serialize(), other.serialize())
+    } catch {
+        XCTFail()
+        return
     }
 }
 
