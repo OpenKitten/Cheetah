@@ -517,7 +517,7 @@ func throwingString(_ json: String) {
     XCTAssertThrowsError(try JSON.parse(from: json.replacingOccurrences(of: "'", with: "\"") as String))
 }
 
-func parse<T: JSONValue>(_ json: String, to other: T) {
+func parse<T: Value>(_ json: String, to other: T) {
     do {
         guard let value = try JSON.parse(from: json.replacingOccurrences(of: "'", with: "\""), allowingComments: true) as? T else {
             XCTFail()

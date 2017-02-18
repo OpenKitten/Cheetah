@@ -12,12 +12,14 @@ internal enum EscapableCharacters: Character {
     case t = "\t"
 }
 
+/// Special key-words in JSON
 internal enum SpecialWords {
     static let null: [UInt8] = [0x6e, 0x75, 0x6c, 0x6c]
     static let `true`: [UInt8] = [0x74, 0x72, 0x75, 0x65]
     static let `false`: [UInt8] = [0x66, 0x61, 0x6c, 0x73, 0x65]
 }
 
+/// Special characters in JSON that need special treatment (in some scenarios)
 internal enum SpecialCharacters {
     static let tab: UInt8 = 0x09
     static let lineFeed: UInt8 = 0x0a
@@ -44,19 +46,23 @@ internal enum SpecialCharacters {
     static let colon: UInt8 = 0x3a
 }
 
-
+/// The JSON context
 public struct JSON {
+    /// The data that is being parsed
     let data: [UInt8]
+    
+    /// The position that remembers our current position in parsing
     var position: Int = 0
     
+    /// Initializes this JSON context
     internal init(_ data: [UInt8], allowingComments: Bool) {
         self.data = data
     }
     
+    /// Parses an escaped unicode character (as hexadecimal) at the current position
+    ///
+    /// Requires the position to be after the `\u`
     mutating func parseUnicode() throws -> UnicodeScalar {
-        // Parse from the start
-//        position -= 1
-        
         func makeInteger(from hex: [UInt8]) throws -> UTF16.CodeUnit {
             var int: UInt16 = 0
             
@@ -117,6 +123,7 @@ public struct JSON {
         }
     }
 
+    /// Parses a String at the current position
     mutating func parseString() throws -> String {
         try skipWhitespace()
         
@@ -175,38 +182,6 @@ public struct JSON {
                 try skipWhitespace()
                 
                 return characters
-                
-//                var characterPosition = 0
-//                var string = ""
-                
-//                characterLoop: while characterPosition < characters.count {
-//                    var buffer: [UInt8] = []
-//                    buffer.reserveCapacity(4)
-//                    
-                //                    unicodeLoop: while buffer.count < 4 && characterPosition < characters.count {
-//                var gen = characters.makeIterator()
-//                unicodeLoop: while true {
-////                        buffer.append(characters[characterPosition])
-////                        characterPosition += 1
-//                    
-////                        var utfString = buffer.reversed()
-//                        
-//                        var utf = UTF8()
-//                        switch utf.decode(&gen) {
-//                        case .scalarValue(let unicode):
-//                            
-////                            try reader.nextAndCheckNotDone()
-//                            string.append(Character(unicode))
-//                            continue unicodeLoop
-//                        case .emptyInput:
-//                            return string
-//                        case .error:
-//                            //continue because we might be reading a longer char
-////                            try reader.nextAndCheckNotDone()
-//                            continue unicodeLoop
-//                        }
-//                    }
-//                }
             } else {
                 characters.append(data[position].character)
                 position += 1
@@ -216,7 +191,8 @@ public struct JSON {
         throw JSONError.unexpectedToken(want: SpecialCharacters.stringQuotationMark)
     }
     
-    mutating func parseNumber() throws -> JSONValue {
+    /// Parses a number (int or double, with or without exp) at this position
+    mutating func parseNumber() throws -> Value {
         var negate = false
         
         func parseInteger(autoNegate: Bool = false) -> Int? {
@@ -299,7 +275,8 @@ public struct JSON {
         }
     }
     
-    mutating func parseValue() throws -> JSONValue {
+    /// Parses any value at the current position
+    mutating func parseValue() throws -> Value {
         try skipWhitespace()
         
         try require(1)
@@ -349,14 +326,15 @@ public struct JSON {
         }
     }
     
-    mutating func parseValues() throws -> [JSONValue] {
+    /// Parses an Array's comma separated values
+    mutating func parseValues() throws -> [Value] {
         try skipWhitespace()
         
         if remaining(1), data[position] == SpecialCharacters.arrayClose {
             return []
         }
         
-        var storage = [JSONValue]()
+        var storage = [Value]()
         
         storage.append(try parseValue())
         
@@ -368,14 +346,15 @@ public struct JSON {
         return storage
     }
     
-    mutating func parseKeyValues() throws -> [String: JSONValue] {
+    /// Parses an Object's comma separated key-value pairs (pairs split by colon)
+    mutating func parseKeyValues() throws -> [String: Value] {
         try skipWhitespace()
         
         if remaining(1), data[position] == SpecialCharacters.objectClose {
             return [:]
         }
         
-        var storage = [String: JSONValue]()
+        var storage = [String: Value]()
         
         func parseKeyValue() throws {
             try skipWhitespace()
@@ -407,6 +386,7 @@ public struct JSON {
         return storage
     }
     
+    /// Skips whitespace including tab, linefeeds and carriage returns
     mutating func skipWhitespace() throws {
         let whitespace: [UInt8] = [SpecialCharacters.tab, SpecialCharacters.space, SpecialCharacters.lineFeed, SpecialCharacters.carriageReturn]
         
@@ -455,20 +435,24 @@ public struct JSON {
         }
     }
     
+    /// Counts the remaining characters in the buffer
     func remaining() -> Int {
         return data.count - position
     }
     
+    /// Throws if the required amount of data is not available
     func require(_ amount: Int) throws {
         guard remaining(amount) else {
             throw JSONError.unexpectedEndOfData
         }
     }
     
+    /// Returns whether the requested amount of bytes is available
     func remaining(_ amount: Int) -> Bool {
         return remaining() > amount - 1
     }
     
+    /// Parses an Array at this location
     mutating func parse(rootLevel: Bool = false) throws -> JSONArray {
         guard data.count >= 2 else {
             throw JSONError.invalidObject
@@ -509,6 +493,7 @@ public struct JSON {
         return JSONArray(storage)
     }
     
+    /// Parses an object at this location
     mutating func parse(rootLevel: Bool = false) throws -> JSONObject {
         guard data.count >= 2 else {
             throw JSONError.invalidObject
@@ -547,11 +532,13 @@ public struct JSON {
         return JSONObject(storage)
     }
     
-    public static func parse(from data: String, allowingComments: Bool = true) throws -> JSONValue {
+    /// Parses any value given a String
+    public static func parse(from data: String, allowingComments: Bool = true) throws -> Value {
         return try parse(from: data.makeJSONBinary())
     }
     
-    public static func parse(from data: [UInt8], allowingComments: Bool = true) throws -> JSONValue {
+    /// Parses any value given a String bytes buffer
+    public static func parse(from data: [UInt8], allowingComments: Bool = true) throws -> Value {
         var parser = JSON(data, allowingComments: allowingComments)
         try parser.skipWhitespace()
         
@@ -559,7 +546,7 @@ public struct JSON {
             throw JSONError.unknownValue
         }
         
-        let result: JSONValue
+        let result: Value
         
         switch parser.data[parser.position] {
         case SpecialCharacters.stringQuotationMark:
