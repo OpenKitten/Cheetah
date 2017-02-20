@@ -5,9 +5,16 @@
 //  Created by Joannis Orlandos on 18/02/2017.
 //
 //
+import KittenCore
 
 /// A JSON Array
-public struct JSONArray: Value, Sequence, ExpressibleByArrayLiteral, Equatable {
+public struct JSONArray: Value, InitializableSequence, ExpressibleByArrayLiteral, Equatable {
+    public init<S>(sequence: S) where S : Sequence, S.Iterator.Element == JSONArray.SupportedValue {
+        self.storage = Array(sequence)
+    }
+
+    public typealias SupportedValue = Value
+
     /// The Swift array representation
     internal var storage: [Value]
     

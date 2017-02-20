@@ -1,4 +1,5 @@
 import Foundation
+import KittenCore
 
 internal enum EscapableCharacters: Character {
     case quote = "\""

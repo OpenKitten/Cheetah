@@ -5,6 +5,7 @@
 //  Created by Joannis Orlandos on 18/02/2017.
 //
 //
+import KittenCore
 
 /// A JSON object/dictionary type
 public struct JSONObject : Value, Sequence, ExpressibleByDictionaryLiteral, Equatable {
@@ -152,5 +153,37 @@ public struct JSONObject : Value, Sequence, ExpressibleByDictionaryLiteral, Equa
     /// Iterates over all key-value pairs
     public func makeIterator() -> DictionaryIterator<String, Value> {
         return storage.makeIterator()
+    }
+}
+
+extension JSONObject : SerializableObject {
+    public static func convert(_ value: Any) -> Value? {
+        return nil
+    }
+
+    public typealias SequenceType = JSONArray
+
+    public init(dictionary: [String : Value]) {
+        self.init(dictionary)
+    }
+    
+    public mutating func setValue(to newValue: Value?, forKey key: String) {
+        storage[key] = newValue
+    }
+    
+    public func getValue(forKey key: String) -> Value? {
+        return storage[key]
+    }
+    
+    public func getKeys() -> [String] {
+        return Array(storage.keys)
+    }
+    
+    public func getValues() -> [Value] {
+        return Array(storage.values)
+    }
+    
+    public func getKeyValuePairs() -> [String : Value] {
+        return storage
     }
 }

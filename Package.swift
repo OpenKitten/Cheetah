@@ -1,5 +1,8 @@
 import PackageDescription
 
 let package = Package(
-    name: "Cheetah"
+    name: "Cheetah",
+    dependencies: [
+        .Package(url: "https://github.com/OpenKitten/KittenCore.git", majorVersion: 0)
+    ]
 )
