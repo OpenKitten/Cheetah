@@ -7,8 +7,26 @@
 //
 import KittenCore
 
+public enum JSONData : DataType {
+    public typealias Object = JSONObject
+    public typealias Sequence = JSONArray
+    public typealias SupportedValue = Value
+}
+
 /// A JSON object/dictionary type
-public struct JSONObject : Value, Sequence, ExpressibleByDictionaryLiteral, Equatable {
+public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLiteral, Equatable {
+    public init<S>(sequence: S) where S : Sequence, S.Iterator.Element == SupportedValue {
+        for (key, value) in sequence {
+            storage[key] = value
+        }
+    }
+    
+    public typealias SupportedValue = (String, Value)
+    
+    public var dictionaryRepresentation: [String : Value] {
+        return storage
+    }
+    
     /// The dictionary representation
     internal var storage = [String: Value]()
     
@@ -153,45 +171,5 @@ public struct JSONObject : Value, Sequence, ExpressibleByDictionaryLiteral, Equa
     /// Iterates over all key-value pairs
     public func makeIterator() -> DictionaryIterator<String, Value> {
         return storage.makeIterator()
-    }
-}
-
-extension JSONObject : SerializableObject {
-    /// Special conversion strategies when the automated defaults fail
-    public static func convert(_ value: Any) -> Value? {
-        return nil
-    }
-
-    /// We use JSONArray as a sequence
-    public typealias SequenceType = JSONArray
-
-    /// Initializes with a Dictionary
-    public init(dictionary: [String : Value]) {
-        self.init(dictionary)
-    }
-    
-    /// Sets the value of a key
-    public mutating func setValue(to newValue: Value?, forKey key: String) {
-        storage[key] = newValue
-    }
-    
-    /// Gets the value of a key
-    public func getValue(forKey key: String) -> Value? {
-        return storage[key]
-    }
-    
-    /// Gets all keys
-    public func getKeys() -> [String] {
-        return Array(storage.keys)
-    }
-    
-    /// Gets all values
-    public func getValues() -> [Value] {
-        return Array(storage.values)
-    }
-    
-    /// Gets all key-value pairs as a Dictionary
-    public func getKeyValuePairs() -> [String : Value] {
-        return storage
     }
 }
