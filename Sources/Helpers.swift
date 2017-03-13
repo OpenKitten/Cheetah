@@ -35,8 +35,30 @@ extension Optional where Wrapped == Value {
     }
 }
 
+extension JSONObject {
+    /// Helper initializer to initialize a JSONObject from a Value
+    public init?(_ value: Value?) {
+        if let me = value as? JSONObject {
+            self = me
+        } else {
+            return nil
+        }
+    }
+}
+
+extension JSONArray {
+    /// Helper initializer to initialize a JSONArray from a Value
+    public init?(_ value: Value?) {
+        if let me = value as? JSONArray {
+            self = me
+        } else {
+            return nil
+        }
+    }
+}
+
 extension String {
-    /// Helper initializer to initialize a Value from a
+    /// Helper initializer to initialize a String from a Value
     public init?(_ value: Value?) {
         switch value {
         case let me as String:
@@ -95,7 +117,7 @@ extension Int {
 }
 
 extension Double {
-    /// Initializes this value if the received value is an integer
+    /// Initializes this value if the received value is a double
     public init?(_ value: Value?) {
         switch value {
         case let me as Int:
