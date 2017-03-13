@@ -6,6 +6,12 @@ public protocol Value : Convertible {
     func serialize() -> [UInt8]
 }
 
+extension Value {
+    public func serializedString() -> String {
+        return String(bytes: self.serialize(), encoding: .utf8) ?? ""
+    }
+}
+
 /// All possible errors
 /// TODO: Discuss: Do we add docs? They're pretty obvious
 public enum JSONError : Error {
