@@ -69,7 +69,7 @@ extension String: Value {
     /// Serializes this String to a JSON String with quotes
     public func serialize() -> [UInt8] {
         var buffer: [UInt8] = [SpecialCharacters.stringQuotationMark]
-        buffer.append(contentsOf: [UInt8](self.utf8))
+        buffer.append(contentsOf: self.makeJSONBinary())
         return buffer + [SpecialCharacters.stringQuotationMark]
     }
     
@@ -82,7 +82,7 @@ extension String: Value {
         for char in self.unicodeScalars {
             switch char.value {
             case numericCast(SpecialCharacters.stringQuotationMark):
-                buffer.append(contentsOf: "\"".utf8)
+                buffer.append(contentsOf: "\\\"".utf8)
             case numericCast(SpecialCharacters.escape):
                 buffer.append(contentsOf: "\\".utf8)
             case numericCast(SpecialCharacters.tab):
