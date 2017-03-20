@@ -30,8 +30,17 @@ extension Optional where Wrapped == Value {
     /// If this optional contains a JSONObject it'll return the Value at the provided key only if it exists.
     ///
     /// Otherwise it will return nil
+    ///
+    /// When setting, if the receiver is not already an object, it will be overwritten by a new object
     public subscript(_ key: String) -> Value? {
-        return (self as? JSONObject)?[key]
+        get {
+            return (self as? JSONObject)?[key]
+        }
+        set {
+            var object = (self as? JSONObject) ?? [:]
+            object[key] = newValue
+            self = object
+        }
     }
 }
 
