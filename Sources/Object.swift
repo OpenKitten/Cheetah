@@ -32,7 +32,7 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
     
     /// Initializes this Object from a JSON String
     public init(from data: String, allowingComments: Bool = true) throws {
-        var parser = JSON(data.makeJSONBinary(), allowingComments: allowingComments)
+        var parser = JSON(data.utf8, allowingComments: allowingComments)
         self = try parser.parse(rootLevel: true)
     }
     

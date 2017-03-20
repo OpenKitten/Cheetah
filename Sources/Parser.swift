@@ -56,8 +56,8 @@ public struct JSON {
     var position: Int = 0
     
     /// Initializes this JSON context
-    internal init(_ data: [UInt8], allowingComments: Bool) {
-        self.data = data
+    internal init<S : Sequence>(_ data: S, allowingComments: Bool) where S.Iterator.Element == UInt8 {
+        self.data = Array(data)
     }
     
     /// Parses an escaped unicode character (as hexadecimal) at the current position
@@ -136,7 +136,7 @@ public struct JSON {
         
         position += 1
         
-        var characters = ""
+        var characters = [UInt8]()
         
         loop: while position < data.count {
             if data[position] == SpecialCharacters.escape {
@@ -150,28 +150,28 @@ public struct JSON {
                 case 0x75:
                     position += 1
                     let unicodeScalar = try parseUnicode()
-                    characters.append(Character(unicodeScalar))
+                    characters.append(contentsOf: String(unicodeScalar).utf8)
                 case SpecialCharacters.stringQuotationMark:
-                    characters.append(SpecialCharacters.stringQuotationMark.character)
+                    characters.append(SpecialCharacters.stringQuotationMark)
                     position += 1
                 case SpecialCharacters.escape:
-                    characters.append(SpecialCharacters.escape.character)
+                    characters.append(SpecialCharacters.escape)
                     position += 1
                 case 0x2f: // `/`
-                    characters.append(SpecialCharacters.slash.character)
+                    characters.append(SpecialCharacters.slash)
                     position += 1
                 case 0x62: // `b`
                     throw JSONError.unsupported
                 case 0x66: // `f`
                     throw JSONError.unsupported
                 case 0x6e: // `n`
-                    characters.append(SpecialCharacters.lineFeed.character)
+                    characters.append(SpecialCharacters.lineFeed)
                     position += 1
                 case 0x72: // `r`
-                    characters.append(SpecialCharacters.carriageReturn.character)
+                    characters.append(SpecialCharacters.carriageReturn)
                     position += 1
                 case 0x74: // `t`
-                    characters.append(SpecialCharacters.tab.character)
+                    characters.append(SpecialCharacters.tab)
                     position += 1
                 default:
                     throw JSONError.invalidEscapedCharacter
@@ -182,9 +182,13 @@ public struct JSON {
                 
                 try skipWhitespace()
                 
-                return characters
+                guard let string = String(bytes: characters, encoding: .utf8) else {
+                    throw JSONError.invalidString
+                }
+                
+                return string
             } else {
-                characters.append(data[position].character)
+                characters.append(data[position])
                 position += 1
             }
         }
@@ -535,11 +539,11 @@ public struct JSON {
     
     /// Parses any value given a String
     public static func parse(from data: String, allowingComments: Bool = true) throws -> Value {
-        return try parse(from: data.makeJSONBinary())
+        return try parse(from: data.utf8)
     }
     
     /// Parses any value given a String bytes buffer
-    public static func parse(from data: [UInt8], allowingComments: Bool = true) throws -> Value {
+    public static func parse<S : Sequence>(from data: S, allowingComments: Bool = true) throws -> Value where S.Iterator.Element == UInt8 {
         var parser = JSON(data, allowingComments: allowingComments)
         try parser.skipWhitespace()
         
@@ -559,7 +563,7 @@ public struct JSON {
         case 0x30...0x39, SpecialCharacters.minus:
             result = try parser.parseNumber()
         case 0x6e: // `n`
-            guard parser.remaining(4), [UInt8](data[parser.position..<parser.position + 4]) == SpecialWords.null else {
+            guard parser.remaining(4), [UInt8](parser.data[parser.position..<parser.position + 4]) == SpecialWords.null else {
                 throw JSONError.unknownValue
             }
             
@@ -567,7 +571,7 @@ public struct JSON {
             
             result = Null()
         case 0x74: // `t`
-            guard parser.remaining(4), [UInt8](data[parser.position..<parser.position + 4]) == SpecialWords.true else {
+            guard parser.remaining(4), [UInt8](parser.data[parser.position..<parser.position + 4]) == SpecialWords.true else {
                 throw JSONError.unknownValue
             }
             
@@ -575,7 +579,7 @@ public struct JSON {
             
             result = true
         case 0x66: // `f`
-            guard parser.remaining(5), [UInt8](data[parser.position..<parser.position + 5]) == SpecialWords.false else {
+            guard parser.remaining(5), [UInt8](parser.data[parser.position..<parser.position + 5]) == SpecialWords.false else {
                 throw JSONError.unknownValue
             }
             

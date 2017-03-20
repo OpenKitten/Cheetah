@@ -25,6 +25,9 @@ public enum JSONError : Error {
     case invalidObject
     
     /// -
+    case invalidString
+    
+    /// -
     case invalidArray
     
     /// -

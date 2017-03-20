@@ -116,7 +116,7 @@ public struct JSONArray: Value, InitializableSequence, ExpressibleByArrayLiteral
     
     /// Initializes this JSON Array with a JSON String containing this array in JSON format
     public init(from data: String, allowingComments: Bool = true) throws {
-        var parser = JSON(data.makeJSONBinary(), allowingComments: allowingComments)
+        var parser = JSON(data.utf8, allowingComments: allowingComments)
         self = try parser.parse(rootLevel: true)
     }
     
