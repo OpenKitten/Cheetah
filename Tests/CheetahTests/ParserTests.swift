@@ -20,7 +20,7 @@ class ParsingTests: XCTestCase {
     // MARK: - Null
     
     func testNullParses() throws {
-        XCTAssert(try JSON.parse(from: "null") is Null)
+        XCTAssert(try JSON.parse(from: "null") is NSNull)
     }
     
     func testNullThrowsOnMismatch() {
@@ -60,7 +60,7 @@ class ParsingTests: XCTestCase {
     func testArray_JustNull() throws {
         let array = try JSONArray(from: "[ null ]")
         
-        XCTAssertEqual(array, [Null()])
+        XCTAssertEqual(array, [NSNull()])
     }
     
     func testArray_ZeroBegining() throws {
@@ -77,12 +77,12 @@ class ParsingTests: XCTestCase {
     
     func testArray_NullsBoolsNums_Normal_Minimal_RootParser() throws {
         XCTAssertEqual(try JSONArray(from: "[null,true,false,12,-10,-24.3,18.2e9]"),
-            [Null(), true, false, 12, -10, -24.3, 18200000000.0])
+            [NSNull(), true, false, 12, -10, -24.3, 18200000000.0])
     }
     
     func testArray_NullsBoolsNums_Normal_MuchWhitespace() throws {
         XCTAssertEqual(try JSONArray(from: " \t[\n  null ,true, \n-12.3 , false\r\n]\n  "),
-            [Null(), true, -12.3, false])
+            [NSNull(), true, -12.3, false])
     }
     
     func testArray_NullsAndBooleans_Bad_MissingEnd() {
@@ -428,7 +428,7 @@ class ParsingTests: XCTestCase {
         parse("{\t'hello': 'wor🇨🇿ld', \n\t 'val': 1234, 'many': [\n-12.32, null, 'yo'\r], 'emptyDict': {}, 'dict': {'arr':[]}, 'name': true}", to: [
                 "hello": "wor🇨🇿ld",
                 "val": 1234,
-                "many": [-12.32, Null(), "yo"] as JSONArray,
+                "many": [-12.32, NSNull(), "yo"] as JSONArray,
                 "emptyDict": [:] as JSONObject,
                 "dict": ["arr": [] as JSONArray] as JSONObject,
                 "name": true
