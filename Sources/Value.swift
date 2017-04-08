@@ -3,10 +3,12 @@ import Foundation
 
 /// A JSON Primitive type
 public protocol Value : Convertible {
+    /// Serializes this to binary
     func serialize() -> [UInt8]
 }
 
 extension Value {
+    /// Serializes this value to a String
     public func serializedString() -> String {
         return String(bytes: self.serialize(), encoding: .utf8) ?? ""
     }
