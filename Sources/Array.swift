@@ -9,10 +9,12 @@ import KittenCore
 
 /// A JSON Array
 public struct JSONArray: Value, InitializableSequence, ExpressibleByArrayLiteral, Equatable {
+    /// Converts a sequence to a JSONArray
     public init<S>(sequence: S) where S : Sequence, S.Iterator.Element == JSONArray.SupportedValue {
         self.storage = Array(sequence)
     }
 
+    /// This supports Cheetah.Value types
     public typealias SupportedValue = Value
 
     /// The Swift array representation
@@ -141,6 +143,7 @@ public struct JSONArray: Value, InitializableSequence, ExpressibleByArrayLiteral
         return serializedData + [SpecialCharacters.arrayClose]
     }
     
+    /// Makes a JSONArray iterable
     public func makeIterator() -> IndexingIterator<[Value]> {
         return storage.makeIterator()
     }
