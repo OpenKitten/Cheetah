@@ -87,7 +87,7 @@ extension String: Value {
             case numericCast(SpecialCharacters.stringQuotationMark):
                 buffer.append(contentsOf: "\\\"".utf8)
             case numericCast(SpecialCharacters.escape):
-                buffer.append(contentsOf: "\\".utf8)
+                buffer.append(contentsOf: "\\\\".utf8)
             case numericCast(SpecialCharacters.tab):
                 buffer.append(contentsOf: "\\t".utf8)
             case numericCast(SpecialCharacters.lineFeed):
