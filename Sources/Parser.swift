@@ -200,7 +200,7 @@ public struct JSON {
     mutating func parseNumber() throws -> Value {
         var negate = false
         
-        func parseInteger(autoNegate: Bool = false) -> Int? {
+        func parseInteger(autoNegate: Bool = false) -> String? {
             var int = (negate && autoNegate) ? "-" : ""
             
             // Loop over all digits
@@ -209,14 +209,14 @@ public struct JSON {
                 position += 1
             }
             
-            return Int(int)
+            return int
         }
         
         func parseExp() -> Int? {
             if data[position] == SpecialCharacters.minus {
                 position += 1
                 
-                if let number = parseInteger() {
+                if let number = Int(parseInteger()) {
                     return -number
                 }
                 
@@ -226,7 +226,7 @@ public struct JSON {
                     position += 1
                 }
                 
-                return parseInteger()
+                return Int(parseInteger())
             }
         }
         
@@ -250,11 +250,11 @@ public struct JSON {
                 throw JSONError.invalidNumber
             }
             
-            guard let parsedFracture = Double("0.\(fracture)") else {
+            guard let parsedBaseNumber = Double("\(int).\(fracture)") else {
                 throw JSONError.invalidNumber
             }
             
-            let baseNumber = Double(int) + (negate ? -parsedFracture : parsedFracture)
+            let baseNumber = negate ? -parsedBaseNumber : parsedBaseNumber
             
             if remaining(1), data[position] == 0x45 || data[position] == 0x65 {
                 position += 1
@@ -268,13 +268,13 @@ public struct JSON {
             return baseNumber
             
             // `E` or `e`
-        } else if data[position] == 0x45 || data[position] == 0x65 {
+        } else if data[position] == 0x45 || data[position] == 0x65, let int = Double(int) {
             position += 1
             guard let exp = parseExp() else {
                 throw JSONError.invalidNumber
             }
             
-            return Double(int) * pow(10, Double(exp))
+            return int * pow(10, Double(exp))
         } else {
             return int
         }
