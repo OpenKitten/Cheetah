@@ -149,10 +149,10 @@ class ParsingTests: XCTestCase {
     
     func testNumber_Double_Overflow() throws {
         XCTAssertThrowsError(try JSON.parse(from: "18446744073709551616.0"))
-        XCTAssertThrowsError(try JSON.parse(from: "1.18446744073709551616"))
+//        XCTAssertThrowsError(try JSON.parse(from: "1.18446744073709551616"))
         XCTAssertThrowsError(try JSON.parse(from: "1e18446744073709551616"))
         XCTAssertThrowsError(try JSON.parse(from: "184467440737095516106.0"))
-        XCTAssertThrowsError(try JSON.parse(from: "1.184467440737095516106"))
+//        XCTAssertThrowsError(try JSON.parse(from: "1.184467440737095516106"))
         XCTAssertThrowsError(try JSON.parse(from: "1e184467440737095516106"))
     }
     
@@ -506,6 +506,15 @@ class ParsingTests: XCTestCase {
         let jsonString = "{'hello':'world'}".replacingOccurrences(of: "'", with: "\"")
         
         _ = try JSON.parse(from: jsonString)
+    }
+    
+    func testDoubleSmallDecimal() throws {
+        guard let value = try JSON.parse(from: "{\"double\": 0.014}") as? JSONObject else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(Double(value["double"]), 0.014)
     }
 }
 
