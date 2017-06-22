@@ -212,6 +212,28 @@ public struct JSON {
             return Int(int)
         }
         
+        func parseFracture(prefix: String, autoNegate: Bool = false) throws -> Double? {
+            var prefix = prefix
+            
+            if negate && autoNegate && prefix.characters.first != "-" {
+                prefix = "-" + prefix
+            }
+            
+            var number = ""
+            
+            // Loop over all digits
+            while position < data.count && data[position] >= 0x30 && data[position] <= 0x39 {
+                number.append(Character(UnicodeScalar(data[position])))
+                position += 1
+            }
+            
+            guard number.characters.count > 0 else {
+                return nil
+            }
+            
+            return Double(prefix + "." + number)
+        }
+        
         func parseExp() -> Int? {
             if data[position] == SpecialCharacters.minus {
                 position += 1
@@ -245,16 +267,9 @@ public struct JSON {
         
         if data[position] == SpecialCharacters.dot {
             position += 1
-            
-            guard let fracture = parseInteger() else {
+            guard let baseNumber = try parseFracture(prefix: int.description, autoNegate: true) else {
                 throw JSONError.invalidNumber
             }
-            
-            guard let parsedFracture = Double("0.\(fracture)") else {
-                throw JSONError.invalidNumber
-            }
-            
-            let baseNumber = Double(int) + (negate ? -parsedFracture : parsedFracture)
             
             if remaining(1), data[position] == 0x45 || data[position] == 0x65 {
                 position += 1
