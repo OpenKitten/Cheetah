@@ -25,6 +25,10 @@ public struct JSONArray: Value, InitializableSequence, ExpressibleByArrayLiteral
         return storage.count
     }
     
+    public mutating func append(_ value: Value) {
+        self.storage.append(value)
+    }
+    
     /// Returns the value at the given position in this array of values
     public subscript(position: Int) -> Value {
         get {
