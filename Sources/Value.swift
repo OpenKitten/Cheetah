@@ -142,3 +142,39 @@ extension Null : Value {
         return nil
     }
 }
+
+extension Dictionary : CheetahValue {
+    public func serialize() -> [UInt8] {
+        var dict = [String: CheetahValue]()
+        
+        for (key, value) in self {
+            guard let key = key as? String, let value = value as? CheetahValue else {
+                let error = "Only [String: Cheetah.Value] dictionaries are Cheetah.Value. Tried to initialize a JSONObject using [\(Element.self)]. This will crash on debug and print this message on release configurations."
+                assertionFailure(error)
+                print(error)
+                continue
+            }
+            
+            dict[key] = value
+        }
+        
+        return JSONObject(dict).serialize()
+    }
+}
+
+extension Array : CheetahValue {
+    public func serialize() -> [UInt8] {
+        let array = self.flatMap { value -> CheetahValue? in
+            guard let value = value as? CheetahValue else {
+                let error = "Only [Cheetah.Value] arrays are Cheetah.Value. Tried to initialize a JSONArray using [\(Element.self)]. This will crash on debug and print this message on release configurations."
+                assertionFailure(error)
+                print(error)
+                return nil
+            }
+            
+            return value
+        }
+        
+        return JSONArray(array).serialize()
+    }
+}

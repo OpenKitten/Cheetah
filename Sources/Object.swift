@@ -13,6 +13,8 @@ public enum JSONData : DataType {
     public typealias SupportedValue = Value
 }
 
+public typealias CheetahValue = Value
+
 /// A JSON object/dictionary type
 public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLiteral, Equatable {
     public init<S>(sequence: S) where S : Sequence, S.Iterator.Element == SupportedValue {
@@ -21,14 +23,14 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
         }
     }
     
-    public typealias SupportedValue = (String, Value)
+    public typealias SupportedValue = (String, CheetahValue)
     
-    public var dictionaryRepresentation: [String : Value] {
+    public var dictionaryRepresentation: [String : CheetahValue] {
         return storage
     }
     
     /// The dictionary representation
-    internal var storage = [String: Value]()
+    internal var storage = [String: CheetahValue]()
     
     /// Initializes this Object from a JSON String
     public init(from data: String, allowingComments: Bool = true) throws {
@@ -43,14 +45,14 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
     }
     
     /// Initializes this JSON Object with a Dictionary literal
-    public init(dictionaryLiteral elements: (String, Value)...) {
+    public init(dictionaryLiteral elements: (String, CheetahValue?)...) {
         for (key, value) in elements {
             self.storage[key] = value
         }
     }
     
     /// Initializes this Object from a dictionary
-    public init(_ dictionary: [String: Value]) {
+    public init(_ dictionary: [String: CheetahValue]) {
         self.storage = dictionary
     }
     
@@ -60,7 +62,7 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
     }
     
     /// Accesses a value in the JSON Object
-    public subscript(_ key: String) -> Value? {
+    public subscript(_ key: String) -> CheetahValue? {
         get {
             return storage[key]
         }
@@ -75,13 +77,18 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
     }
     
     /// Returns all values in this object
-    public var values: [Value] {
+    public var values: [CheetahValue] {
         return Array(storage.values)
     }
     
     /// Returns the dictionary representation of this Object
-    public var dictionaryValue: [String: Value] {
+    public var dictionaryValue: [String: CheetahValue] {
         return storage
+    }
+    
+    @discardableResult
+    public mutating func removeValue(forKey key: String) -> CheetahValue? {
+        return self.storage.removeValue(forKey: key)
     }
     
     /// Compares two Objects to see if all key-value pairs are equal
