@@ -176,7 +176,7 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
     }
     
     /// Iterates over all key-value pairs
-    public func makeIterator() -> DictionaryIterator<String, Value> {
+    public func makeIterator() -> DictionaryIterator<String, CheetahValue> {
         return storage.makeIterator()
     }
 }
