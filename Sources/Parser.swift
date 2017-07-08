@@ -160,9 +160,11 @@ public struct JSON {
                     characters.append(SpecialCharacters.slash)
                     position += 1
                 case 0x62: // `b`
-                    throw JSONError.unsupported
+                    characters.append(0x08)
+                    position += 1
                 case 0x66: // `f`
-                    throw JSONError.unsupported
+                    characters.append(0x0c)
+                    position += 1
                 case 0x6e: // `n`
                     characters.append(SpecialCharacters.lineFeed)
                     position += 1

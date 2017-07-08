@@ -93,6 +93,10 @@ extension String: Value {
                 buffer.append(contentsOf: "\\n".utf8)
             case numericCast(SpecialCharacters.carriageReturn):
                 buffer.append(contentsOf: "\\r".utf8)
+            case numericCast(0x08): // \b
+                buffer.append(contentsOf: "\\b".utf8)
+            case numericCast(0x0c): // \f
+                buffer.append(contentsOf: "\\f".utf8)
             case 0x00...0x1F:
                 buffer.append(contentsOf: "\\u".utf8)
                 let str = String(char, radix: 16, uppercase: true)

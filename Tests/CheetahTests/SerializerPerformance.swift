@@ -2,8 +2,8 @@
 import XCTest
 import Cheetah
 
-let largeJsonData = loadFixture("large")
-let largeJsonFoundationData = loadFixtureData("large")
+let largeJsonData = loadFixture("insane")
+let largeJsonFoundationData = loadFixtureData("insane")
 
 let largeJson = try! JSON.parse(from: largeJsonData)
 
