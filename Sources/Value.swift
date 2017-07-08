@@ -1,8 +1,7 @@
-import KittenCore
 import Foundation
 
 /// A JSON Primitive type
-public protocol Value : Convertible {
+public protocol Value {
     /// Serializes this to binary
     func serialize() -> [UInt8]
 }
@@ -132,7 +131,7 @@ extension Double: Value {
     }
 }
 
-extension Null : Value {
+extension NSNull : Value {
     /// Serializes Null to a JSON String as binary
     public func serialize() -> [UInt8] {
         return SpecialWords.null

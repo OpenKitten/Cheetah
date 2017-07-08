@@ -5,10 +5,10 @@
 //  Created by Joannis Orlandos on 18/02/2017.
 //
 //
-import KittenCore
+import Foundation
 
 /// A JSON Array
-public struct JSONArray: Value, InitializableSequence, ExpressibleByArrayLiteral, Equatable {
+public struct JSONArray: Value, ExpressibleByArrayLiteral, Equatable, Sequence {
     /// Converts a sequence to a JSONArray
     public init<S>(sequence: S) where S : Sequence, S.Iterator.Element == JSONArray.SupportedValue {
         self.storage = Array(sequence)
@@ -91,8 +91,8 @@ public struct JSONArray: Value, InitializableSequence, ExpressibleByArrayLiteral
                     return false
                 }
                 
-            } else if value is Null {
-                guard rhs[key] is Null else {
+            } else if value is NSNull {
+                guard rhs[key] is NSNull else {
                     return false
                 }
                 

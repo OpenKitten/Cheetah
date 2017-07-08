@@ -1,5 +1,4 @@
 import Foundation
-import KittenCore
 
 internal enum EscapableCharacters: Character {
     case quote = "\""
@@ -322,7 +321,7 @@ public struct JSON {
             
             position += 4
             
-            return Null()
+            return NSNull()
         case 0x74: // `t`
             try require(4)
             guard [UInt8](data[position..<position + 4]) == SpecialWords.true else {
@@ -584,7 +583,7 @@ public struct JSON {
             
             parser.position += 4
             
-            result = Null()
+            result = NSNull()
         case 0x74: // `t`
             guard parser.remaining(4), [UInt8](parser.data[parser.position..<parser.position + 4]) == SpecialWords.true else {
                 throw JSONError.unknownValue

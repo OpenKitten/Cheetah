@@ -5,18 +5,12 @@
 //  Created by Joannis Orlandos on 18/02/2017.
 //
 //
-import KittenCore
-
-public enum JSONData : DataType {
-    public typealias Object = JSONObject
-    public typealias Sequence = JSONArray
-    public typealias SupportedValue = Value
-}
+import Foundation
 
 public typealias CheetahValue = Value
 
 /// A JSON object/dictionary type
-public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLiteral, Equatable {
+public struct JSONObject : Value, ExpressibleByDictionaryLiteral, Equatable, Sequence {
     public init<S>(sequence: S) where S : Sequence, S.Iterator.Element == SupportedValue {
         for (key, value) in sequence {
             storage[key] = value
@@ -93,6 +87,10 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
     
     /// Compares two Objects to see if all key-value pairs are equal
     public static func ==(lhs: JSONObject, rhs: JSONObject) -> Bool {
+        guard lhs.count == rhs.count else {
+            return false
+        }
+        
         for (key, value) in lhs {
             if let value = value as? String {
                 guard let value2 = rhs[key] as? String else {
@@ -139,8 +137,8 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
                     return false
                 }
                 
-            } else if value is Null {
-                guard rhs[key] is Null else {
+            } else if value is NSNull {
+                guard rhs[key] is NSNull else {
                     return false
                 }
                 
