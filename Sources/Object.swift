@@ -6,6 +6,7 @@
 //
 //
 import KittenCore
+import Foundation
 
 public enum JSONData : DataType {
     public typealias Object = JSONObject
@@ -40,6 +41,12 @@ public struct JSONObject : Value, InitializableObject, ExpressibleByDictionaryLi
     
     /// Initializes this Object from a JSON String as byte array
     public init(from data: [UInt8], allowingComments: Bool = true) throws {
+        var parser = JSON(data, allowingComments: allowingComments)
+        self = try parser.parse(rootLevel: true)
+    }
+    
+    /// Initializes this Object from a JSON String as byte array
+    public init(from data: Data, allowingComments: Bool = true) throws {
         var parser = JSON(data, allowingComments: allowingComments)
         self = try parser.parse(rootLevel: true)
     }
