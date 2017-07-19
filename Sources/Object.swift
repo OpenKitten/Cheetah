@@ -38,6 +38,12 @@ public struct JSONObject : Value, ExpressibleByDictionaryLiteral, Equatable, Seq
         self = try parser.parse(rootLevel: true)
     }
     
+    /// Initializes this Object from a JSON String as byte array
+    public init(from data: Data, allowingComments: Bool = true) throws {
+        var parser = JSON(data, allowingComments: allowingComments)
+        self = try parser.parse(rootLevel: true)
+    }
+    
     /// Initializes this JSON Object with a Dictionary literal
     public init(dictionaryLiteral elements: (String, CheetahValue?)...) {
         for (key, value) in elements {
