@@ -335,6 +335,12 @@ public class JSONDecoder {
         let decoder = _JSONDecoder(target: .object(object))
         return try T(from: decoder)
     }
+    
+    public func decode<T : Decodable>(_ type: T.Type, from string: String) throws -> T {
+        let object = try JSONObject(from: string)
+        let decoder = _JSONDecoder(target: .object(object))
+        return try T(from: decoder)
+    }
 }
 
 fileprivate class _JSONDecoder : Decoder, _JSONCodingPathContaining {
