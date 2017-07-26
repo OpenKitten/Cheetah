@@ -19,11 +19,11 @@ public class JSONEncoder {
         return encoder.target.object
     }
     
-    public func encode(value: Encodable) throws -> Value {
+    public func encode(value: Encodable) throws -> Value? {
         let encoder = _JSONEncoder()
         try value.encode(to: encoder)
         
-        return encoder.target.object
+        return encoder.target.value
     }
 }
 
