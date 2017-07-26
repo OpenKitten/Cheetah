@@ -1,12 +1,24 @@
-language: swift
+language: generic
 
 matrix:
   include:
-    - osx_image: xcode8.3
-    - osx_image: xcode9
+    - os: osx
+      osx_image: xcode8.3
+      env:
+        - SWIFT_VERSION: system
+        - SWIFT_VERSION: 3.0.2
+    - os: osx
+      osx_image: xcode9
+      env:
+        - SWIFT_VERSION: system
     - os: linux
       dist: trusty
+      env:
+        - SWIFT_VERSION: 3.0.2
+        - SWIFT_VERSION: 3.1.1
+        - SWIFT_VERSION: 4.0-DEVELOPMENT-SNAPSHOT-2017-07-20-a
 
-install: swift package generate-xcodeproj
+install:
+  - eval "$(curl -sL https://gist.githubusercontent.com/kylef/5c0475ff02b7c7671d2a/raw/9f442512a46d7a2af7b850d65a7e9bd31edfb09b/swiftenv-install.sh)"
 script:
   swift test
