@@ -20,7 +20,7 @@ public class JSONEncoder {
     }
     
     public func encode(value: Encodable) throws -> Value? {
-        let encoder = _JSONEncoder()
+        let encoder = _JSONEncoder(target: .primitive(get: { nil }, set: { _ in }))
         try value.encode(to: encoder)
         
         return encoder.target.value
