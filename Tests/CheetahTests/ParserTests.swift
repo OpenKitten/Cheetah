@@ -225,11 +225,12 @@ class ParsingTests: XCTestCase {
         //parse("-24.3245e-2", to:  -24.3245e-2)
     }
     
-    #if arch(x86_64) || arch(arm64)
     func testNumber_Double_ExactnessNoExponent() throws {
+        // this test does not work on 32-bit platforms
+        #if arch(x86_64) || arch(arm64)
         parse("-123451123442342.12124234", to: -123451123442342.12124234)
+        #endif
     }
-    #endif
     
     func testNumber_Double_ExactnessWithExponent() throws {
         parse("-123456789.123456789e-150", to: -123456789.123456789e-150)

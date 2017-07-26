@@ -4,6 +4,7 @@
 
 import XCTest
 
+@testable import CheetahTests
 extension ParsingTests {
   static var allTests: [(String, (ParsingTests) -> () throws -> Void)] = [
     ("test_FailOnEmpty", test_FailOnEmpty),
@@ -50,7 +51,6 @@ extension ParsingTests {
     ("testNumber_Double_Exp_Positive", testNumber_Double_Exp_Positive),
     ("testNumber_Double_Exp_Negative", testNumber_Double_Exp_Negative),
     ("testNumber_Double_ExactnessNoExponent", testNumber_Double_ExactnessNoExponent),
-    ("testNumber_Double_ExactnessNoExponent", testNumber_Double_ExactnessNoExponent),
     ("testNumber_Double_ExactnessWithExponent", testNumber_Double_ExactnessWithExponent),
     ("testNumber_Double_Exp_NoFrac", testNumber_Double_Exp_NoFrac),
     ("testNumber_Double_Exp_TwoEs", testNumber_Double_Exp_TwoEs),
@@ -92,20 +92,10 @@ extension ParsingTests {
     ("testDoubleSmallDecimal", testDoubleSmallDecimal)
   ]
 }
-extension SerializerBenchmarks {
-  static var allTests: [(String, (SerializerBenchmarks) -> () throws -> Void)] = [
-    ("testDeserializationPerformance", testDeserializationPerformance),
-    ("testSerializerPerformance", testSerializerPerformance),
-    ("testSerializerPrettyPrintedPerformance", testSerializerPrettyPrintedPerformance),
-    ("testSerializerFoundationPerformance", testSerializerFoundationPerformance),
-    ("testSerializerFoundationPrettyPrintedPerformance", testSerializerFoundationPrettyPrintedPerformance)
-  ]
-}
 
 // swiftlint:disable trailing_comma
 XCTMain([
   testCase(ParsingTests.allTests),
-  testCase(SerializerBenchmarks.allTests),
 ])
 // swiftlint:enable trailing_comma
 
