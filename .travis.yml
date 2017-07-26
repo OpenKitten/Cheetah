@@ -4,6 +4,8 @@ matrix:
   include:
     - osx_image: xcode8.3
     - osx_image: xcode9
+    - os: linux
+      dist: trusty
 
 install: swift package generate-xcodeproj
 script:
