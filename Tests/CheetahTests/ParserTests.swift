@@ -1,5 +1,6 @@
 
 import XCTest
+import Foundation
 @testable import Cheetah
 
 class ParsingTests: XCTestCase {

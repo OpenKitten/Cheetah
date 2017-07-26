@@ -2,6 +2,7 @@
 
 import XCTest
 import Cheetah
+import Foundation
 
 let largeJsonData = loadFixture("insane")
 let largeJsonFoundationData = loadFixtureData("insane")
