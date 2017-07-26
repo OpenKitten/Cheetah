@@ -1,3 +1,4 @@
+#if arch(x86_64) || arch(arm64)
 
 import XCTest
 import Cheetah
@@ -56,3 +57,5 @@ class SerializerBenchmarks: XCTestCase {
     }
   }
 }
+
+#endif

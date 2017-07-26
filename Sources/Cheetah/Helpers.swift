@@ -6,6 +6,7 @@
 //
 //
 
+#if swift(>=3.1)
 extension Optional where Wrapped == Value {
     /// Serializes the underlying value if available
     /// 
@@ -43,6 +44,7 @@ extension Optional where Wrapped == Value {
         }
     }
 }
+#endif
 
 extension JSONObject {
     /// Helper initializer to initialize a JSONObject from a Value
@@ -85,7 +87,7 @@ extension String {
     
     /// Serializes the value if it exists, otherwise it'll serialize "null"
     public init(serializing value: Value?) {
-        guard let me = String(bytes: value.serialize(), encoding: .utf8) else {
+        guard let me = String(bytes: value?.serialize() ?? SpecialWords.null, encoding: .utf8) else {
             self = "null"
             return
         }

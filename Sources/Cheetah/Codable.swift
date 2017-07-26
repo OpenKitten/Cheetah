@@ -5,6 +5,8 @@
 //  Created by Joannis Orlandos on 22/06/2017.
 //
 
+#if swift(>=3.2)
+
 import Foundation
 
 // MARK: Encoding
@@ -916,3 +918,5 @@ fileprivate struct _JSONUnkeyedIndexKey : CodingKey {
         return nil
     }
 }
+
+#endif

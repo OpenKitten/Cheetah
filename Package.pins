@@ -1,12 +1,7 @@
 {
   "autoPin": true,
   "pins": [
-    {
-      "package": "KittenCore",
-      "reason": null,
-      "repositoryURL": "https://github.com/OpenKitten/KittenCore.git",
-      "version": "0.2.2"
-    }
+
   ],
   "version": 1
 }
