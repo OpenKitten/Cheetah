@@ -87,6 +87,6 @@ install:
   - git clone --depth 1 https://github.com/kylef/swiftenv.git ~/.swiftenv
   - export SWIFTENV_ROOT="$HOME/.swiftenv"
   - export PATH="$SWIFTENV_ROOT/bin:$SWIFTENV_ROOT/shims:$PATH"
-  - swiftenv install "$SWIFT_VERSION"
+  - swiftenv install "$SWIFT_VERSION"  || true
   - swiftenv global "$SWIFT_VERSION"
   - swift package generate-xcodeproj
