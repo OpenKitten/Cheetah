@@ -573,7 +573,7 @@ fileprivate class _JSONDecoder : Decoder, _JSONCodingPathContaining {
     
     func unwrap(_ value: Value?) throws -> Float {
         // TODO: Check losing precision like JSONEncoder
-        guard let number: Double = try unwrap(value) else {
+        guard let number: Double = try? unwrap(value) else {
             throw DecodingError.valueNotFound(Float.self, DecodingError.Context(codingPath: codingPath, debugDescription: "Value not found - expected value of type \(Float.self), found null / nil"))
         }
         
