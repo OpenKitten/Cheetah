@@ -3,8 +3,39 @@ import XCTest
 import Foundation
 @testable import Cheetah
 
+struct Test: Codable, ExpressibleByIntegerLiteral {
+    let value: Int
+    
+    init(integerLiteral value: Int) {
+        self.value = value
+    }
+}
+
 class ParsingTests: XCTestCase {
     
+    func testEncodeArrayJSON() throws {
+        let tests: [Test] = [
+            0, 1, 2, 3, 4, 5
+        ]
+        
+        let results1 = try tests.map { test in
+            return try JSONEncoder().encode(test)
+        }
+        
+        let result1: JSONObject = [
+            "tests": JSONArray(results1)
+        ]
+        
+        let results2 = JSONArray(try tests.map { test in
+            return try JSONEncoder().encode(test)
+            })
+        
+        let result2: JSONObject = [
+            "tests": results2
+        ]
+        
+        XCTAssertEqual(result1, result2)
+    }
     func test_FailOnEmpty() {
         XCTAssertThrowsError(try JSON.parse(from: ""))
     }
