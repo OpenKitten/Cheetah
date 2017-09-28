@@ -198,9 +198,14 @@ fileprivate struct _JSONUnkeyedEncodingContainer : UnkeyedEncodingContainer {
     }
     
     private func nestedEncoder() -> _JSONEncoder {
-        let index = self.encoder.target.array.count
-        self.encoder.target.array.append(JSONArray())
-        return _JSONEncoder(codingPath: codingPath, target: .primitive(get: { self.encoder.target.array[index] }, set: { self.encoder.target.array[index] = $0 }))
+        return _JSONEncoder(codingPath: codingPath, target: .primitive(get: {
+            let index = self.encoder.target.array.count
+            return self.encoder.target.array[index]
+        }, set: { value in
+            if let value = value {
+                self.encoder.target.array.append(value)
+            }
+        }))
     }
     
     func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {

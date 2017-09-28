@@ -11,7 +11,26 @@ struct Test: Codable, ExpressibleByIntegerLiteral {
     }
 }
 
+struct BrokenArray: Codable {
+    let values: [String] = [
+        "A", "B", "C"
+    ]
+}
+
 class ParsingTests: XCTestCase {
+    
+    func testBrokenJSONArray() throws {
+        let object = try JSONEncoder().encode(BrokenArray())
+        
+        XCTAssertEqual(object.count, 1)
+        
+        guard let array = JSONArray(object["values"]) else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(array.count, 3)
+    }
     
     func testEncodeArrayJSON() throws {
         let tests: [Test] = [
