@@ -21,6 +21,13 @@ public class JSONEncoder {
         return encoder.target.object
     }
     
+    public func encodeArray(_ value: Encodable) throws -> JSONArray {
+        let encoder = _JSONEncoder(target: .array(JSONArray()))
+        try value.encode(to: encoder)
+        
+        return encoder.target.array
+    }
+    
     public func encode(value: Encodable) throws -> Value? {
         let encoder = _JSONEncoder(target: .primitive(get: { nil }, set: { _ in }))
         try value.encode(to: encoder)
@@ -154,7 +161,7 @@ fileprivate class _JSONEncoder : Encoder, _JSONCodingPathContaining {
 extension JSONArray {
     fileprivate subscript(index: Int) -> Value? {
         get {
-            if self.count > index {
+            guard self.count > index else {
                 return nil
             }
             
@@ -198,12 +205,17 @@ fileprivate struct _JSONUnkeyedEncodingContainer : UnkeyedEncodingContainer {
     }
     
     private func nestedEncoder() -> _JSONEncoder {
+        let index = self.encoder.target.array.count
+        
         return _JSONEncoder(codingPath: codingPath, target: .primitive(get: {
-            let index = self.encoder.target.array.count
             return self.encoder.target.array[index]
         }, set: { value in
             if let value = value {
-                self.encoder.target.array.append(value)
+                if self.encoder.target.array.count > index {
+                    self.encoder.target.array[index] = value
+                } else {
+                    self.encoder.target.array.append(value)
+                }
             }
         }))
     }
@@ -774,7 +786,7 @@ fileprivate class _JSONUnkeyedDecodingContainer : UnkeyedDecodingContainer, _JSO
         self.codingPath = decoder.codingPath
     }
     
-    var count: Int? { return decoder.target.object.count }
+    var count: Int? { return decoder.target.array.count }
     var currentIndex: Int = 0
     var isAtEnd: Bool {
         return currentIndex >= self.count!

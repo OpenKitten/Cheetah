@@ -17,6 +17,12 @@ struct BrokenArray: Codable {
     ]
 }
 
+struct User: Codable {
+    var id: Int
+    var username: String
+    var other: Bool
+}
+
 class ParsingTests: XCTestCase {
     
     func testBrokenJSONArray() throws {
@@ -30,6 +36,62 @@ class ParsingTests: XCTestCase {
         }
         
         XCTAssertEqual(array.count, 3)
+    }
+    
+    func testCodable() throws {
+        let user0 = User(id: 0, username: "test0", other: true)
+        let user1 = User(id: 1, username: "test1", other: false)
+        let user2 = User(id: 2, username: "test2", other: false)
+        let user3 = User(id: 3, username: "test3", other: true)
+
+        var obj0 = try JSONEncoder().encode(user0)
+        var obj1 = try JSONEncoder().encode(user1)
+        var obj2 = try JSONEncoder().encode(user2)
+        var obj3 = try JSONEncoder().encode(user3)
+
+        XCTAssertEqual(Int(obj0["id"]), 0)
+        XCTAssertEqual(Int(obj1["id"]), 1)
+        XCTAssertEqual(Int(obj2["id"]), 2)
+        XCTAssertEqual(Int(obj3["id"]), 3)
+
+        XCTAssertEqual(String(obj0["username"]), "test0")
+        XCTAssertEqual(String(obj1["username"]), "test1")
+        XCTAssertEqual(String(obj2["username"]), "test2")
+        XCTAssertEqual(String(obj3["username"]), "test3")
+
+        XCTAssertEqual(Bool(obj0["other"]), true)
+        XCTAssertEqual(Bool(obj1["other"]), false)
+        XCTAssertEqual(Bool(obj2["other"]), false)
+        XCTAssertEqual(Bool(obj3["other"]), true)
+        
+        let value = try JSONEncoder().encodeArray([user0, user1, user2, user3])
+        
+        guard let array0 = JSONArray(value) else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(array0.count, 4)
+        
+        obj0 = JSONObject(array0[0])!
+        obj1 = JSONObject(array0[1])!
+        obj2 = JSONObject(array0[2])!
+        obj3 = JSONObject(array0[3])!
+        
+        XCTAssertEqual(Int(obj0["id"]), 0)
+        XCTAssertEqual(Int(obj1["id"]), 1)
+        XCTAssertEqual(Int(obj2["id"]), 2)
+        XCTAssertEqual(Int(obj3["id"]), 3)
+        
+        XCTAssertEqual(String(obj0["username"]), "test0")
+        XCTAssertEqual(String(obj1["username"]), "test1")
+        XCTAssertEqual(String(obj2["username"]), "test2")
+        XCTAssertEqual(String(obj3["username"]), "test3")
+        
+        XCTAssertEqual(Bool(obj0["other"]), true)
+        XCTAssertEqual(Bool(obj1["other"]), false)
+        XCTAssertEqual(Bool(obj2["other"]), false)
+        XCTAssertEqual(Bool(obj3["other"]), true)
     }
     
     func testEncodeArrayJSON() throws {
