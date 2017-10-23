@@ -374,9 +374,21 @@ public class JSONDecoder {
         return try T(from: decoder)
     }
     
+    public func decode<T : Decodable>(_ type: T.Type, from array: JSONArray) throws -> T {
+        let decoder = _JSONDecoder(target: .array(array))
+        return try T(from: decoder)
+    }
+    
     public func decode<T : Decodable>(_ type: T.Type, from string: String) throws -> T {
-        let object = try JSONObject(from: string)
-        let decoder = _JSONDecoder(target: .object(object))
+        let decoder: _JSONDecoder
+        
+        if let object = try? JSONObject(from: string) {
+            decoder = _JSONDecoder(target: .object(object))
+        } else {
+            let array = try JSONArray(from: string)
+            decoder = _JSONDecoder(target: .array(array))
+        }
+        
         return try T(from: decoder)
     }
 }

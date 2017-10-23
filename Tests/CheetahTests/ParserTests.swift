@@ -92,6 +92,11 @@ class ParsingTests: XCTestCase {
         XCTAssertEqual(Bool(obj1["other"]), false)
         XCTAssertEqual(Bool(obj2["other"]), false)
         XCTAssertEqual(Bool(obj3["other"]), true)
+        
+        let encoded = array0.serializedString()
+        let values = try JSONDecoder().decode([User].self, from: encoded)
+        
+        XCTAssertEqual(values.count, 4)
     }
     
     func testEncodeArrayJSON() throws {
