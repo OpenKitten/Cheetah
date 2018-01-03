@@ -34,11 +34,11 @@ extension UInt16 {
 
 extension String {
     #if swift(>=4.0)
-    private func toCharacterSequence() -> String {
+    internal func toCharacterSequence() -> String {
         return self
     }
     #else
-    private func toCharacterSequence() -> CharacterView {
+    internal func toCharacterSequence() -> CharacterView {
         return self.characters
     }
     #endif    
