@@ -6,7 +6,10 @@ var package = Package(
     products: [
         .library(name: "Cheetah", targets: ["Cheetah"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/OpenKitten/KittenCore.git", .revision("0.2.4-swift5")),
+    ],
     targets: [
-        .target(name: "Cheetah")
+        .target(name: "Cheetah", dependencies: ["KittenCore"])
     ]
 )
