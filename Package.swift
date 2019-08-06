@@ -1,8 +1,12 @@
+// swift-tools-version:4.0
 import PackageDescription
 
-let package = Package(
+var package = Package(
     name: "Cheetah",
-    dependencies: [
-        .Package(url: "https://github.com/OpenKitten/KittenCore.git", majorVersion: 0, minor: 2)
+    products: [
+        .library(name: "Cheetah", targets: ["Cheetah"])
+    ],
+    targets: [
+        .target(name: "Cheetah")
     ]
 )
