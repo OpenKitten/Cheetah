@@ -2,9 +2,11 @@
 import PackageDescription
 
 var package = Package(
-    name: "Cheetah"
+    name: "Cheetah",
+    products: [
+        .library(name: "Cheetah", targets: ["Cheetah"])
+    ],
+    targets: [
+        .target(name: "Cheetah")
+    ]
 )
-
-#if swift(>=3.1)
-package.swiftLanguageVersions = [3, 4]
-#endif
