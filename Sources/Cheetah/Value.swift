@@ -100,7 +100,7 @@ extension String: Value {
             case 0x00...0x1F:
                 buffer.append(contentsOf: "\\u".utf8)
                 let str = String(char, radix: 16, uppercase: true)
-                if str.characters.count == 1 {
+                if str.count == 1 {
                     buffer.append(contentsOf: "000\(str)".utf8)
                 } else {
                     buffer.append(contentsOf: "00\(str)".utf8)
@@ -167,7 +167,7 @@ extension Dictionary : CheetahValue {
 
 extension Array : CheetahValue {
     public func serialize() -> [UInt8] {
-        let array = self.flatMap { value -> CheetahValue? in
+        let array = self.compactMap { value -> CheetahValue? in
             guard let value = value as? CheetahValue else {
                 let error = "Only [Cheetah.Value] arrays are Cheetah.Value. Tried to initialize a JSONArray using [\(Element.self)]. This will crash on debug and print this message on release configurations."
                 assertionFailure(error)

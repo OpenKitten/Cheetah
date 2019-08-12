@@ -652,7 +652,7 @@ fileprivate struct _JSONKeyedDecodingContainer<Key : CodingKey> : KeyedDecodingC
     var codingPath: [CodingKey]
     
     var allKeys: [Key] {
-        return decoder.target.object.keys.flatMap { Key(stringValue: $0) }
+        return decoder.target.object.keys.compactMap(Key.init)
     }
     
     func contains(_ key: Key) -> Bool {

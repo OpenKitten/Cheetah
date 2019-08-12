@@ -216,7 +216,7 @@ public struct JSON {
         func parseFracture(prefix: String, autoNegate: Bool = false) throws -> Double? {
             var prefix = prefix
             
-            if negate && autoNegate && prefix.characters.first != "-" {
+            if negate && autoNegate && prefix.first != "-" {
                 prefix = "-" + prefix
             }
             
@@ -228,7 +228,7 @@ public struct JSON {
                 position += 1
             }
             
-            guard number.characters.count > 0 else {
+            guard number.count > 0 else {
                 return nil
             }
             
